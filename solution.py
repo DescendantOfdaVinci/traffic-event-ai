@@ -2,11 +2,26 @@ from __future__ import annotations
 
 from pathlib import Path
 from collections import defaultdict, deque
+import random
 
 import cv2
 import numpy as np
+import torch
 from ultralytics import YOLO
 
+
+SEED = 42
+
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(SEED)
+
+if hasattr(torch.backends, "cudnn"):
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
 
 # Official event classes.
 CLASSES = [
