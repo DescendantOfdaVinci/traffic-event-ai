@@ -70,18 +70,33 @@ The system runs fully offline during evaluation.
 """)
 
 st.header("Exploratory Data Analysis")
-st.write("""
-The supplied videos come from the same fixed CCTV camera.
+st.write(
+    "The supplied footage comes from a fixed 4K CCTV camera. "
+    "The stable viewpoint allows consistent vehicle tracking and "
+    "camera-specific motion analysis."
+)
 
-A fixed viewpoint makes it possible to analyze vehicle movement,
-traffic density and trajectories consistently across videos.
+c1, c2, c3, c4 = st.columns(4)
 
-Future improvements can use camera-specific lane geometry,
-crosswalk zones and stop-line locations.
+c1.metric("Resolution", "3840 × 2160")
+c2.metric("Frame rate", "29.97 FPS")
+c3.metric("Duration", "127.6 s")
+c4.metric("Frames", "3,825")
+
+st.markdown("""
+### Key observations
+
+- The camera viewpoint is fixed, so road geometry remains stable between frames.
+- Persistent tracking can therefore be used to estimate vehicle trajectories.
+- 4K resolution improves object visibility but increases inference cost.
+- Processing every third frame reduces computation while preserving enough temporal information for the current motion-based rules.
+- The hidden evaluation uses the same camera viewpoint, so future lane and crosswalk calibration can be camera-specific.
 """)
 
 st.header("Live Demo")
-
+st.caption(
+    "Demo limit: MP4 files up to 200 MB and approximately 2 minutes."
+)
 uploaded = st.file_uploader(
     "Upload an MP4 video",
     type=["mp4", "MP4"],
@@ -238,4 +253,7 @@ st.header("Links")
 
 st.markdown("""
 - [GitHub Repository](https://github.com/DescendantOfdaVinci/traffic-event-ai)
+- [Model Weights — YOLO11n](https://github.com/DescendantOfdaVinci/traffic-event-ai/blob/main/weights/yolo11n.pt)
+- [Sample Predictions](https://github.com/DescendantOfdaVinci/traffic-event-ai/blob/main/predictions_samples.json)
+- [Technical Documentation](https://github.com/DescendantOfdaVinci/traffic-event-ai#readme)
 """)
