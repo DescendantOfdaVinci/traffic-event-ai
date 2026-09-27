@@ -248,13 +248,30 @@ Challenge research, documentation and technical report review.
 ### Nikol Asriyan — Website & Quality Assurance
 
 Website content review, demo testing and final submission check.
+---
+## Determinism
+
+The project uses a fixed random seed:
+
+```text
+SEED = 42
+```
+
+The seed is applied to Python `random`, NumPy and PyTorch.
+
+For CUDA inference, cuDNN benchmarking is disabled and deterministic mode is enabled where supported.
+
+The goal is for repeated runs on the same machine to produce the same predictions up to floating-point noise.
 
 ---
 
 ## Reproducibility
+
 
 The inference pipeline uses local model weights and does not require an internet connection during evaluation.
 
 No custom training is performed in the current version.
 
 The organizer-provided `run_submission.py` and `evaluate.py` files are kept unchanged.
+
+
