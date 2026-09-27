@@ -21,73 +21,166 @@ st.set_page_config(
 )
 st.markdown("""
 <style>
-    .block-container {
-        max-width: 1100px;
-        padding-top: 2rem;
-        padding-bottom: 4rem;
-    }
 
-    h1 {
-        font-size: 3.2rem !important;
-        font-weight: 800 !important;
-        letter-spacing: -1px;
-    }
+/* PAGE */
+.block-container {
+    max-width: 1150px;
+    padding-top: 2rem;
+    padding-bottom: 5rem;
+}
 
-    h2 {
-        margin-top: 2.4rem !important;
-        font-weight: 750 !important;
-    }
+/* HERO */
+.hero {
+    padding: 42px 44px;
+    border-radius: 24px;
+    background: linear-gradient(
+        135deg,
+        #0f172a 0%,
+        #172554 55%,
+        #1e3a8a 100%
+    );
+    margin-bottom: 45px;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.15);
+}
 
-    h3 {
-        margin-top: 1.2rem !important;
-    }
+.hero-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: #93c5fd;
+    margin-bottom: 15px;
+}
 
-    [data-testid="stMetric"] {
-        background: #f7f8fa;
-        border: 1px solid #e5e7eb;
-        padding: 16px;
-        border-radius: 14px;
-    }
+.hero h1 {
+    color: white !important;
+    font-size: 4rem !important;
+    line-height: 1.05 !important;
+    margin: 0 0 18px 0 !important;
+    letter-spacing: -0.04em;
+}
 
-    [data-testid="stFileUploader"] {
-        border-radius: 14px;
-    }
+.hero-sub {
+    max-width: 720px;
+    color: #dbeafe;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
 
-    .stButton > button {
-        border-radius: 10px;
-        font-weight: 700;
-        padding: 0.65rem 1.2rem;
-    }
+.hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
 
-    hr {
-        margin: 2.5rem 0;
-    }
+.hero-tags span {
+    color: #e0f2fe;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px;
+    padding: 7px 13px;
+    font-size: 0.85rem;
+}
+
+/* HEADINGS */
+h2 {
+    margin-top: 3rem !important;
+    margin-bottom: 1.4rem !important;
+    letter-spacing: -0.025em;
+}
+
+h3 {
+    letter-spacing: -0.015em;
+}
+
+/* METRICS */
+[data-testid="stMetric"] {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    border-radius: 18px;
+    min-height: 125px;
+}
+
+[data-testid="stMetricLabel"] {
+    font-weight: 600;
+}
+
+[data-testid="stMetricValue"] {
+    font-size: 2rem;
+}
+
+/* BUTTON */
+.stButton > button {
+    border-radius: 12px;
+    font-weight: 700;
+    padding: 0.65rem 1.3rem;
+}
+
+/* UPLOADER */
+[data-testid="stFileUploader"] {
+    border-radius: 18px;
+}
+
+/* LINKS */
+a {
+    text-decoration: none;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🚦 Traffic Event AI")
-st.caption(
-    "YOLO11n + ByteTrack • Offline inference • Fixed-camera traffic analytics"
-)
-st.write(
-    "Offline computer vision system for detecting traffic events "
-    "from a fixed CCTV road camera."
-)
+st.markdown("""
+<div class="hero">
+    <div class="hero-badge">WIUT HACKATHON 2026 · COMPUTER VISION</div>
+    <h1>Traffic Event AI</h1>
+    <p class="hero-sub">
+        Detecting traffic events from fixed CCTV footage using
+        YOLO11n, ByteTrack and trajectory-based reasoning.
+    </p>
+
+    <div class="hero-tags">
+        <span>YOLO11n</span>
+        <span>ByteTrack</span>
+        <span>Offline inference</span>
+        <span>Fixed-camera analytics</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 st.header("Team")
-st.markdown("""
-### Ziyoda Omonova — Team Captain & Computer Vision
-ML pipeline, integration, testing, GitHub and project coordination.  
-📧 ziyodaomonova@webster.edu
 
-### Dilafruz Tursunpulatova — Research & Documentation
-Challenge research, documentation and technical report review.  
-📧 dtursunpulatova@webster.edu
+col1, col2, col3 = st.columns(3)
 
-### Nikol Asriyan — Website & Quality Assurance
-Website content review, demo testing and final submission check.  
-📧 nikolasriyan@webster.edu
-""")
+with col1:
+    with st.container(border=True):
+        st.subheader("Ziyoda Omonova")
+        st.caption("TEAM CAPTAIN · COMPUTER VISION")
+        st.write(
+            "ML pipeline, integration, testing, "
+            "GitHub and project coordination."
+        )
+        st.markdown("✉️ [Email](mailto:ziyodaomonova@webster.edu)")
+
+with col2:
+    with st.container(border=True):
+        st.subheader("Dilafruz Tursunpulatova")
+        st.caption("RESEARCH · DOCUMENTATION")
+        st.write(
+            "Challenge research, documentation "
+            "and technical report review."
+        )
+        st.markdown("✉️ [Email](mailto:dtursunpulatova@webster.edu)")
+
+with col3:
+    with st.container(border=True):
+        st.subheader("Nikol Asriyan")
+        st.caption("WEBSITE · QUALITY ASSURANCE")
+        st.write(
+            "Website content review, demo testing "
+            "and final submission check."
+        )
+        st.markdown("✉️ [Email](mailto:nikolasriyan@webster.edu)")
 
 st.header("Problem")
 st.write("""
@@ -126,10 +219,12 @@ st.write(
 
 c1, c2, c3, c4 = st.columns(4)
 
-c1.metric("Resolution", "3840 × 2160")
+c1.metric("Resolution", "4K")
 c2.metric("Frame rate", "29.97 FPS")
 c3.metric("Duration", "127.6 s")
 c4.metric("Frames", "3,825")
+
+st.caption("Native resolution: 3840 × 2160")
 
 st.markdown("""
 ### Key observations
