@@ -1,106 +1,260 @@
-# WIUT Hackathon 2026 — Computer Vision track: starter kit
+# Traffic Event AI
 
-Traffic events from a fixed road camera: **detect** them as time segments
-(`[start_sec, end_sec, label]`) and, as a bonus, **anticipate** accidents with a
-causal risk score. Three files; read the task description for the rules.
+Computer vision system for detecting traffic events from a fixed CCTV road camera.
 
+## Live Demo
+
+**Public demo:**  
+https://traffic-event-ai-uyf744glaujrjwb5sfbild.streamlit.app
+
+**Repository:**  
+https://github.com/DescendantOfdaVinci/traffic-event-ai
+
+---
+
+## Problem
+
+The goal is to process an MP4 video from a fixed road camera and return traffic events as temporal segments:
+
+```text
+[start_sec, end_sec, label]
 ```
-solution.py          <- the ONLY file you implement (CLASSES, detect_events, RiskEstimator)
-run_submission.py    <- organizers' harness: folder of videos -> predictions.json   (do not modify)
-evaluate.py          <- format check + the official metric                          (do not modify)
-examples/            <- ground_truth.json and predictions.json in the exact format
-requirements.txt     <- numpy + opencv for the harness; add your own deps to YOUR repo
+
+The official evaluation is performed offline on hidden videos from the same fixed camera viewpoint.
+
+---
+
+## Approach
+
+Our current MVP uses the following pipeline:
+
+```text
+Video
+→ YOLO11n object detection
+→ ByteTrack multi-object tracking
+→ vehicle trajectories
+→ motion analysis
+→ rule-based temporal event detection
 ```
 
-## Quickstart
+### Object Detection
+
+YOLO11n detects road vehicles such as:
+
+- cars
+- motorcycles
+- buses
+- trucks
+
+### Tracking
+
+ByteTrack assigns persistent IDs to detected vehicles and allows the system to analyze movement over time.
+
+### Event Detection
+
+The current implementation focuses on two event classes:
+
+- `stopped_vehicle`
+- `congestion`
+
+Vehicle trajectories are analyzed in normalized image coordinates.
+
+A vehicle that remains nearly stationary for at least 10 seconds can be classified as `stopped_vehicle`.
+
+Congestion is detected when multiple tracked vehicles remain at very low speeds for a sustained period.
+
+Temporal fragments of the same class are merged before returning the final events.
+
+---
+
+## Accident Anticipation
+
+Part B is optional in the current MVP.
+
+`RiskEstimator` currently returns a risk score of `0.0`.
+
+Future work would use vehicle trajectories and time-to-collision estimates to anticipate accidents.
+
+---
+
+## Model
+
+We use:
+
+- Ultralytics YOLO11n pretrained object detector
+- ByteTrack multi-object tracker
+
+The YOLO weights are included locally in:
+
+```text
+weights/yolo11n.pt
+```
+
+No hosted AI API is used during inference.
+
+The submission is designed to run fully offline.
+
+No custom model training was performed for the current MVP.
+
+---
+
+## Data
+
+Development and testing used the unlabeled CCTV sample videos provided by the hackathon organizers.
+
+The hidden evaluation videos were not accessed.
+
+No additional external training dataset was used by our team for the current MVP.
+
+---
+
+## Installation
+
+Python 3.10 or newer is required.
 
 ```bash
 pip install -r requirements.txt
-# 1. implement solution.py
-# 2. label the sample videos yourselves -> my_labels.json (same shape as examples/ground_truth.json)
-python run_submission.py --videos samples --out predictions_samples.json --team <your-team>
-python evaluate.py --pred predictions_samples.json --gt my_labels.json --per-video
-python evaluate.py --pred predictions_samples.json --validate-only        # format check without labels
 ```
 
-## The interface (`solution.py`)
+---
 
-```python
-CLASSES = ["accident", "near_miss", "red_light", "wrong_way", "illegal_u_turn",
-           "stopped_vehicle", "jaywalking", "failure_to_yield", "illegal_turn",
-           "solid_line_crossing", "stop_line", "congestion", "road_obstacle", "fire_smoke"]
+## Run the Submission
 
-def detect_events(video_path: str) -> list[list]:
-    """Part A: [[start_sec, end_sec, label], ...]; label in CLASSES; same-class segments don't overlap."""
-
-class RiskEstimator:
-    def reset(self, meta: dict) -> None: ...            # meta: video_id, fps, width, height, n_frames
-    def step(self, frame: np.ndarray, t_sec: float) -> float: ...   # BGR uint8 frame -> P(accident within 5 s)
-```
-
-`step` is called for **every frame in order** by the harness; it must not open the
-video itself. Skipping frames internally and returning the last score is fine.
-You may remove ids from `CLASSES`; never add.
-
-## What we run (offline, one GPU, no internet)
+Run the system on a folder of videos:
 
 ```bash
-pip install -r requirements.txt            # or: docker build -t team .
-python run_submission.py --videos /data/test --out predictions.json
-python evaluate.py --pred predictions.json --gt ground_truth.json
+python run_submission.py \
+  --videos samples \
+  --out predictions_samples.json \
+  --team "Traffic Event AI"
 ```
 
-Time budget per video: **3 × its duration** for Part A + Part B together; a video
-over budget or a crash scores as empty. Events with a bad label, bad times, or a
-same-class overlap are dropped by the harness and listed in its log. Weights
-≤ 5 GB, shipped in the repo or fetched once by `weights/download.sh` before the
-offline run.
+---
 
-## predictions.json
+## Validate Output
 
-```json
-{
-  "team": "your-team-name",
-  "videos": {
-    "test_001.mp4": {
-      "events": [[12.4, 18.9, "accident"], [40.0, 43.5, "red_light"]],
-      "risk":   [[0.00, 0.01], [0.04, 0.01], [0.08, 0.02]]
-    },
-    "test_002.mp4": {"events": [], "risk": []}
-  }
-}
+```bash
+python evaluate.py \
+  --pred predictions_samples.json \
+  --validate-only
 ```
 
-`risk` is written by the harness (one `[t_sec, score]` per frame). Keys are file
-names. Every test video must be present, even with `"events": []`.
-Ground truth: `{"test_001.mp4": {"duration": 600.0, "fps": 25.0, "events": [[12.0, 19.0, "accident"]]}}`.
+Our current sample output passes the official validator:
 
-## Metric (exact code in `evaluate.py`)
+```text
+0 errors
+0 warnings
+VALID
+```
 
-**Part A.** Per class `c` and per tIoU threshold τ ∈ {0.3, 0.5, 0.7}: greedy
-one-to-one matching by descending IoU; TP/FP/FN pooled over all videos; `F1_c(τ)`.
-`Score_A = mean_c mean_τ F1_c(τ)`. Classes = those in the ground truth or in your
-predictions (a class you predict that never occurs scores 0).
+---
 
-**Part B** (`accident` only; H = 5 s, W = 10 s, θ = 0.5). Frames in `[s−H, s)`
-before an accident start `s` are positive; frames inside accidents and around
-near-misses are ignored; the rest negative. `AP` = average precision over frames,
-chance-normalised (`max(0, (AP_raw − r)/(1 − r))`, `r` = positive rate, so a
-constant score gets 0). Alarms = runs of score ≥ θ (runs < 2 s apart merged),
-alarm time = run start; an alarm in `[s−W, s)` of an unmatched accident matches it
-→ `F1_alarm`; `mTTA` = mean of `s − alarm_time` (0 if unmatched).
-`Score_B = 0.4·AP + 0.4·F1_alarm + 0.2·mTTA/W`.
+## Current Sample Result
 
-**Model score** `M = 0.7·Score_A + 0.3·Score_B` (M = Score_A if the test set has no
-accidents). Elimination score = 0.6·M + 0.25·Website + 0.15·Code.
+On the provided 127.6-second sample video:
 
-## Tips
+```text
+Video duration: 127.6 s
+Detected events: 3
+Risk samples: 3825
+Runtime: 114.4 s
+Official time budget: 383 s
+Validation: VALID
+```
 
-- Label the sample videos yourselves with the conventions from the task
-  description and run `evaluate.py` against them. Without a dev set you are guessing.
-- Detector + tracker → trajectories; most classes are rules on trajectories plus
-  the scene layout. Learned models help most for `accident` / `near_miss`.
-- Post-process segments: merge fragments, drop sub-second blips, then check F1@0.7.
-- For Part B, time-to-collision from tracks is a strong simple signal; calibrate
-  so that 0.5 means "probably within 5 s". A flat 1.0 scores ≈ 0.
-- Print your runtime early; sampling every 2nd–5th frame is usually enough.
+The system therefore runs within the official runtime limit on our development machine.
+
+---
+
+## Public Demo
+
+The Streamlit demo allows a visitor to:
+
+1. upload an MP4 video;
+2. run traffic-event detection;
+3. view detected events in a table;
+4. inspect an event timeline;
+5. view the raw prediction output.
+
+For the public demo, short video clips are recommended.
+
+---
+
+## Repository Structure
+
+```text
+traffic-event-ai/
+├── solution.py
+├── run_submission.py
+├── evaluate.py
+├── requirements.txt
+├── predictions_samples.json
+├── weights/
+│   └── yolo11n.pt
+├── web/
+│   ├── streamlit_app.py
+│   └── requirements.txt
+├── examples/
+└── README.md
+```
+
+---
+
+## Limitations
+
+The current MVP detects only a subset of the 14 official event classes.
+
+Events such as:
+
+- wrong-way driving
+- jaywalking
+- red-light violations
+- illegal turns
+- near misses
+- accidents
+
+require additional scene-specific calibration or interaction analysis.
+
+Because the evaluation videos use the same fixed camera viewpoint, future versions could define lane polygons, crosswalk regions, expected traffic directions and stop lines for more precise event detection.
+
+---
+
+## Future Work
+
+Planned improvements include:
+
+- lane-region calibration
+- wrong-way detection
+- pedestrian roadway detection
+- crosswalk interaction analysis
+- traffic-light state recognition
+- illegal-turn detection
+- near-miss detection
+- time-to-collision estimation
+- accident anticipation
+
+---
+
+## Team
+
+### Ziyoda Omonova — Team Captain & Computer Vision
+
+ML pipeline, integration, testing, GitHub and project coordination.
+
+### Dilafruz Tursunpulatova — Research & Documentation
+
+Challenge research, documentation and technical report review.
+
+### Nikol Asriyan — Website & Quality Assurance
+
+Website content review, demo testing and final submission check.
+
+---
+
+## Reproducibility
+
+The inference pipeline uses local model weights and does not require an internet connection during evaluation.
+
+No custom training is performed in the current version.
+
+The organizer-provided `run_submission.py` and `evaluate.py` files are kept unchanged.
