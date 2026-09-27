@@ -19,8 +19,56 @@ st.set_page_config(
     page_icon="🚦",
     layout="wide",
 )
+st.markdown("""
+<style>
+    .block-container {
+        max-width: 1100px;
+        padding-top: 2rem;
+        padding-bottom: 4rem;
+    }
+
+    h1 {
+        font-size: 3.2rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -1px;
+    }
+
+    h2 {
+        margin-top: 2.4rem !important;
+        font-weight: 750 !important;
+    }
+
+    h3 {
+        margin-top: 1.2rem !important;
+    }
+
+    [data-testid="stMetric"] {
+        background: #f7f8fa;
+        border: 1px solid #e5e7eb;
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    [data-testid="stFileUploader"] {
+        border-radius: 14px;
+    }
+
+    .stButton > button {
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 0.65rem 1.2rem;
+    }
+
+    hr {
+        margin: 2.5rem 0;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 st.title("🚦 Traffic Event AI")
+st.caption(
+    "YOLO11n + ByteTrack • Offline inference • Fixed-camera traffic analytics"
+)
 st.write(
     "Offline computer vision system for detecting traffic events "
     "from a fixed CCTV road camera."
