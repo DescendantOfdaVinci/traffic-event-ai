@@ -194,6 +194,11 @@ A 30-second test clip was processed in approximately 12 seconds,
 well within the challenge runtime limit.
 """)
 
+st.write(
+    "The public demo successfully detects a stopped vehicle "
+    "and visualizes the detected temporal segment on an event timeline."
+)
+
 st.header("Limitations")
 st.write("""
 The current MVP detects only a subset of the official traffic-event classes.
@@ -229,3 +234,8 @@ illegal turns or red-light running.
 st.caption(
     "Open-weight models only. No hosted inference APIs are used."
 )
+st.header("Links")
+
+st.markdown("""
+- [GitHub Repository](https://github.com/DescendantOfdaVinci/traffic-event-ai)
+""")
